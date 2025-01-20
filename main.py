@@ -41,7 +41,16 @@ def display_hint(hint):
 def display_answer(answer):
   print(" ".join(answer))
 
+def load_words(file_path):
+  try:
+    with open(file_path, 'r') as file:
+      return [word.strip() for word in file.readlines()]
+  except FileNotFoundError:
+    print(f"Error: The file '{file_path}' was not found.")
+    exit()
+
 def main():
+  words = load_words('words.txt')
   answer = random.choice(words)
   hint = ['_'] * len(answer)
   wrong_guesses = 0
