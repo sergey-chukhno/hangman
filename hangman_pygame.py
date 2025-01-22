@@ -1,12 +1,13 @@
 import pygame
 import math
 import random
+import json
 
 # setup display
 pygame.init()
 WIDTH, HEIGHT = 800, 600
 window = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Hangman game")
+pygame.display.set_caption("Hangman Game")
 
 # load images
 images = []
@@ -41,12 +42,39 @@ for i in range(26):
     y = starty + ((i // 13) * (GAP + RADIUS * 2))
     letters.append([x, y, chr(A + i), True])
 
+# score data
+score_file = "score.json"
+
+# Initialize score
+try:
+    with open(score_file, "r") as file:
+        score_data = json.load(file)
+except FileNotFoundError:
+    score_data = {}
+
+game_id = len(score_data) + 1
+wins = sum(1 for result in score_data.values() if result == "win")
+losses = sum(1 for result in score_data.values() if result == "loss")
+
+
+def save_score(outcome):
+    global game_id, score_data, wins, losses
+    score_data[game_id] = outcome
+    with open(score_file, "w") as file:
+        json.dump(score_data, file)
+    game_id += 1
+    if outcome == "win":
+        wins += 1
+    elif outcome == "loss":
+        losses += 1
+
+
 def draw():
     window.fill(WHITE)
 
     # draw title
     text = TITLE_FONT.render('HANGMAN', 1, BLACK)
-    window.blit(text, (WIDTH / 2 - text.get_width() / 2, 20))
+    window.blit(text, (200 - text.get_width() / 2, 20))
 
     # draw word
     display_word = ""
@@ -56,7 +84,7 @@ def draw():
         else:
             display_word += "_ "
     text = WORD_FONT.render(display_word, 1, BLACK)
-    window.blit(text, (350, 200))  # we later need to check that the word does not go off the screen if it is too long
+    window.blit(text, (350, 200))  # ensure word fits on the screen
 
     # draw buttons
     for letter in letters:
@@ -66,8 +94,15 @@ def draw():
             text = LETTER_FONT.render(ltr, 1, BLACK)
             window.blit(text, (x - text.get_width() / 2, y - text.get_height() / 2))
 
+    # draw score
+    score_text = f"Score: W: {wins} L: {losses}"
+    score_display = LETTER_FONT.render(score_text, 1, BLACK)
+    window.blit(score_display, (WIDTH - score_display.get_width() - 10, 10))
+
+    # draw hangman image
     window.blit(images[wrong_guesses], (150, 100))
     pygame.display.update()
+
 
 def display_message(message):
     pygame.time.delay(1500)
@@ -77,8 +112,9 @@ def display_message(message):
     pygame.display.update()
     pygame.time.delay(3000)
 
+
 def main():
-    global wrong_guesses
+    global wrong_guesses, wins, losses
     # game loop setup
     FPS = 60
     clock = pygame.time.Clock()
@@ -104,11 +140,11 @@ def main():
                                 wrong_guesses += 1
 
             if event.type == pygame.KEYDOWN:
-                key = event.unicode.upper()  
-                if key.isalpha() and len(key) == 1: 
+                key = event.unicode.upper()
+                if key.isalpha() and len(key) == 1:
                     for letter in letters:
                         x, y, ltr, visible = letter
-                        if ltr == key and visible:  
+                        if ltr == key and visible:
                             letter[3] = False
                             guessed.append(ltr)
                             if ltr not in word:
@@ -121,14 +157,20 @@ def main():
                 won = False
                 break
         if won:
-            display_message('You WON!')
+            save_score("win")
+            display_message("You WON!")
             break
 
         if wrong_guesses == 6:
-            display_message('You LOST!')
+            save_score("loss")
+            display_message("You LOST!")
             break
 
+    pygame.quit()
+
+
 main()
-pygame.quit()
+
+
 
 
