@@ -2,6 +2,7 @@ import pygame
 import math
 import random
 import json
+import time
 
 # setup display
 pygame.init()
@@ -20,6 +21,10 @@ wrong_guesses = 0
 words = ['PYTHON', 'MATCH', 'MAGIC']
 word = random.choice(words)
 guessed = []
+
+# timer variables
+TIME_LIMIT = 120  # 2 minutes
+start_time = time.time()
 
 # colors
 WHITE = (255, 255, 255)
@@ -101,6 +106,14 @@ def draw():
 
     # draw hangman image
     window.blit(images[wrong_guesses], (150, 100))
+
+    # draw timer
+    elapsed_time = int(time.time() - start_time)
+    remaining_time = max(0, TIME_LIMIT - elapsed_time)
+    timer_text = f"Time Left: {remaining_time}s"
+    timer_display = LETTER_FONT.render(timer_text, 1, BLACK)
+    window.blit(timer_display, (500 - timer_display.get_width(), HEIGHT - 50))
+
     pygame.display.update()
 
 
@@ -122,6 +135,9 @@ def main():
 
     while is_running:
         clock.tick(FPS)
+
+        elapsed_time = int(time.time() - start_time)
+        remaining_time = max(0, TIME_LIMIT - elapsed_time)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -151,17 +167,14 @@ def main():
                                 wrong_guesses += 1
 
         draw()
-        won = True
-        for letter in word:
-            if letter not in guessed:
-                won = False
-                break
+
+        won = all(letter in guessed for letter in word)
         if won:
             save_score("win")
             display_message("You WON!")
             break
 
-        if wrong_guesses == 6:
+        if wrong_guesses == 6 or remaining_time == 0:
             save_score("loss")
             display_message("You LOST!")
             break
@@ -170,7 +183,4 @@ def main():
 
 
 main()
-
-
-
 
