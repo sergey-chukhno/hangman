@@ -12,7 +12,7 @@ WIDTH, HEIGHT = 800, 600
 window = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Hangman Game")
 
- # Load game elements 
+ # Load game assets
 
  # Load background music
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -58,6 +58,7 @@ guessed = []
 current_topic = ""
 images = [] 
 
+# colors and fonts
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 LIGHT_GRAY = (200, 200, 200)
@@ -67,6 +68,7 @@ WORD_FONT = pygame.font.SysFont('comicsans', 40)
 TITLE_FONT = pygame.font.SysFont('comicsans', 50)
 MENU_FONT = pygame.font.SysFont('comicsans', 25)
 
+# letter buttons
 RADIUS = 20
 GAP = 15
 letters = []
@@ -78,6 +80,7 @@ for i in range(26):
     y = starty + ((i // 13) * (GAP + RADIUS * 2))
     letters.append([x, y, chr(A + i), True])
 
+# Score
 score_file = "score.json"
 try:
     with open(score_file, "r") as file:
@@ -100,11 +103,13 @@ def save_score(outcome):
     elif outcome == "loss":
         losses += 1
 
+# words for the game
 def save_words_to_file(words):
     with open('words.txt', 'w') as file:
         for word in words:
             file.write(word + '\n')
 
+# draw game elements
 def draw():
     window.fill(WHITE)
     text = TITLE_FONT.render('HANGMAN', 1, BLACK)
@@ -144,6 +149,7 @@ def draw():
 
     pygame.display.update()
 
+# to display win or loss message
 def display_message(message):
     pygame.time.delay(1500)
     window.fill(WHITE)
@@ -152,6 +158,7 @@ def display_message(message):
     pygame.display.update()
     pygame.time.delay(3000)
 
+# save score
 def save_score_confirmation():
     selected_option = 0
     options = ["Yes", "No"]
