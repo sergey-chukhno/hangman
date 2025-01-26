@@ -1,1 +1,0 @@
-HANGMAN game in Python
